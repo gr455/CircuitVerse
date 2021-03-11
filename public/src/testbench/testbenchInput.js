@@ -64,7 +64,6 @@ export default class TB_Input extends CircuitElement {
         this.nodeList.push(this.clockInp);
         this.testData = this.testData || { type: "comb", sets: [{ inputs: [], outputs: [], n: 0 }] } //{ inputs: [], outputs: [], n: 0 };
         // this.clockInp = new Node(0,20, 0,this,1);
-        console.log(this.testData);
         // if(this.testData.type === "comb"){
         //     this.testData = this.testData.sets[0];
         // }
@@ -74,13 +73,18 @@ export default class TB_Input extends CircuitElement {
         this.outputs = [];
 
         if(true){
-            for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
-                this.outputs.push(new Node(this.rightDimensionX, 30 + i * 20, 1, this, this.testData.sets[0].inputs[i].bitWidth, this.testData.sets[0].inputs[i].label));
+            var oup = 0;
+            for (; oup < this.testData.sets[0].inputs.length; oup++) {
+                this.outputs.push(new Node(this.rightDimensionX, 30 + oup * 20, 1, this, this.testData.sets[0].inputs[oup].bitWidth, this.testData.sets[0].inputs[oup].label));
             }
 
             for (var i = 0; i < this.scope.TB_Output.length; i++) {
                 if (this.scope.TB_Output[i].identifier == this.identifier) { this.scope.TB_Output[i].setup(); }
             }
+            this.resetInp = new Node(this.rightDimensionX, 30 + oup * 20, 1, this, 1, "reset");
+            this.outputs.push(this.resetInp);
+            this.resetInp.value = 0;
+            simulationArea.simulationQueue.add(this.resetInp);
         }
     }
 
@@ -89,6 +93,7 @@ export default class TB_Input extends CircuitElement {
      * toggles state by simply negating this.running so that test cases stop
      */
     toggleState() {
+        console.log(this.running);
         this.running = !this.running;
         this.prevClockState = 0;
     }
@@ -130,12 +135,18 @@ export default class TB_Input extends CircuitElement {
             if (this.clockInp.value != this.prevClockState) {
                 this.prevClockState = this.clockInp.value;
                 if (this.clockInp.value == 1 && this.running) {
+                    if(this.resetInp.value === 1){
+                        this.resetInp.value = 0;
+                        simulationArea.simulationQueue.add(this.resetInp);
+                    }
                     if(this.set < this.testData.sets.length){
                         if (this.iteration < this.testData.sets[this.set].n) {
                             this.iteration++;
                         } else {
                             this.set ++;
                             this.iteration = 0;
+                            this.resetInp.value = 1;
+                            simulationArea.simulationQueue.add(this.resetInp);
                         }
                     }
                     else this.running = false;
