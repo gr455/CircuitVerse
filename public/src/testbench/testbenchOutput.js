@@ -54,7 +54,7 @@ export default class TB_Output extends CircuitElement {
         this.rightDimensionX = 160;
         this.upDimensionY = 0;
         this.downDimensionY = 40;
-        if (this.testBenchInput) { this.downDimensionY = 40 + this.testBenchInput.testData.outputs.length * 20; }
+        if (this.testBenchInput) { this.downDimensionY = 40 + this.testBenchInput.testData.sets[0].outputs.length * 20; }
     }
 
     setup() {
@@ -77,8 +77,8 @@ export default class TB_Output extends CircuitElement {
         this.setDimensions();
 
         if (this.testBenchInput) {
-            for (var i = 0; i < this.testBenchInput.testData.outputs.length; i++) {
-                this.inputs.push(new Node(0, 30 + i * 20, NODE_INPUT, this, this.testBenchInput.testData.outputs[i].bitWidth, this.testBenchInput.testData.outputs[i].label));
+            for (var i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++) {
+                this.inputs.push(new Node(0, 30 + i * 20, NODE_INPUT, this, this.testBenchInput.testData.sets[0].outputs[i].bitWidth, this.testBenchInput.testData.sets[0].outputs[i].label));
             }
         }
     }
@@ -175,9 +175,9 @@ export default class TB_Output extends CircuitElement {
             ctx.font = '30px Raleway';
             ctx.textAlign = 'left';
             ctx.fillStyle = 'blue';
-            for (var i = 0; i < this.testBenchInput.testData.outputs.length; i++) {
+            for (var i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++) {
                 // ctx.beginPath();
-                fillText(ctx, this.testBenchInput.testData.outputs[i].label, 5 + xx, 30 + i * 20 + yy + 4, 10);
+                fillText(ctx, this.testBenchInput.testData.sets[0].outputs[i].label, 5 + xx, 30 + i * 20 + yy + 4, 10);
             }
             ctx.fill();
 
@@ -187,8 +187,8 @@ export default class TB_Output extends CircuitElement {
                 ctx.textAlign = 'right';
                 ctx.fillStyle = 'blue';
                 ctx.beginPath();
-                for (var i = 0; i < this.testBenchInput.testData.outputs.length; i++) {
-                    fillText(ctx, this.testBenchInput.testData.outputs[i].values[this.testBenchInput.iteration - 1], xx + this.rightDimensionX - 5, 30 + i * 20 + yy + 4, 10);
+                for (var i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++) {
+                    fillText(ctx, this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1], xx + this.rightDimensionX - 5, 30 + i * 20 + yy + 4, 10);
                 }
 
                 ctx.fill();
@@ -200,15 +200,15 @@ export default class TB_Output extends CircuitElement {
                 ctx.textAlign = 'center';
                 ctx.fillStyle = 'blue';
 
-                for (var i = 0; i < this.testBenchInput.testData.outputs.length; i++) {
+                for (var i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++) {
                     if (this.inputs[i].value != undefined) {
                         ctx.beginPath();
-                        if (this.testBenchInput.testData.outputs[i].values[this.testBenchInput.iteration - 1] == 'x' || parseInt(this.testBenchInput.testData.outputs[i].values[this.testBenchInput.iteration - 1], 2) == this.inputs[i].value) { ctx.fillStyle = 'green'; } else { ctx.fillStyle = 'red'; }
+                        if (this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1] == 'x' || parseInt(this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1], 2) == this.inputs[i].value) { ctx.fillStyle = 'green'; } else { ctx.fillStyle = 'red'; }
                         fillText(ctx, dec2bin(this.inputs[i].value, this.inputs[i].bitWidth), xx + this.rightDimensionX / 2, 30 + i * 20 + yy + 4, 10);
                         ctx.fill();
                     } else {
                         ctx.beginPath();
-                        if (this.testBenchInput.testData.outputs[i].values[this.testBenchInput.iteration - 1] == 'x') { ctx.fillStyle = 'green'; } else { ctx.fillStyle = 'red'; }
+                        if (this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1] == 'x') { ctx.fillStyle = 'green'; } else { ctx.fillStyle = 'red'; }
                         fillText(ctx, 'X', xx + this.rightDimensionX / 2, 30 + i * 20 + yy + 4, 10);
                         ctx.fill();
                     }

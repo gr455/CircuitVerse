@@ -3,8 +3,14 @@
 <button onclick="addCaseButton()">Add Case </button>
 <button onclick="generateDataAndCopyButton()">GenerateData And Copy to Clipboard</button>
 <button onclick="loadDataButton()">Load Data</button>
+<br><br>
+<button onclick="changeMode('seq')">Seq Mode</button>
+<button onclick="changeMode('comb')">Comb Mode</button>
+<br><br>
+<button onclick="newGroup()">New Group (seq only)</button>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/table-to-json@1.0.0/lib/jquery.tabletojson.min.js"></script>
+<h4 id="Tmode">In comb mode</h4>
 <table style="width:100%" contenteditable="true" id="testBenchTable">
     <tr>
         <th colspan="3">INPUTS</th>
@@ -36,6 +42,10 @@
     </tr>
 </table>
 
+<table style="width:100%" contenteditable="true" id="testBenchMain">
+</table>
+
+
 <div id="testDataDiv" style="font-size:16px;width:600px,height:300px" >
     <textarea id="testData" cols="100" >
         </textarea>
@@ -43,6 +53,11 @@
 </div>
 
 
+<div id="dsf" style="font-size:16px;width:600px,height:300px" >
+	<p>Data so far:</p>
+    <textarea id="dsfTA" cols="100" >
+        </textarea>
+</div>
 
 
 <style>
@@ -66,6 +81,10 @@
 </style>
 
 <script>
+	var mode = "comb";
+	var tIndex = 0;
+	var set_no = 2;
+	var dataSoFar = {type: "comb", sets: []};
 
 //    var data={
 //        "n":3,
@@ -114,6 +133,14 @@ var data={n:0,inputs:[],outputs:[]}
 //        s+='<th colspan="'+data.outputs.length+'">OUTPUTS</th>'
         return s
     }
+    function changeMode(m) {
+    	mode = m;
+    	document.getElementById("Tmode").innerText = "In " + mode + " mode";
+  		$("#testBenchTable").empty();
+  		$("#testBenchTable").append(title(data));
+        $("#testBenchTable").append(labels(data));
+        dataSoFar = {type: mode, sets: []};
+    }
     function labels(data=data){
 
         var s='<tr>';
@@ -128,22 +155,22 @@ var data={n:0,inputs:[],outputs:[]}
 
     function testCases(data=data){
         var s='';
-        for(var i=0;i<data.n;i++){
+        for(tIndex = 0;tIndex<data.n;tIndex++){
+
             s+='<tr>';
-            s+='<td >'+(i+1)+'</td>'
+            s+='<td >'+(tIndex+1)+'</td>'
             for(var j=0;j<data.inputs.length;j++)
-                s+='<td >' + data.inputs[j].values[i] +'</td>'
+                s+='<td >' + data.inputs[j].values[tIndex] +'</td>'
             for(var j=0;j<data.outputs.length;j++)
-                s+='<td >' + data.outputs[j].values[i] +'</td>'
+                s+='<td >' + data.outputs[j].values[tIndex] +'</td>'
             s+="</tr>";
         }
 
         return s;
     }
 
-
+    // only visual
     function loadData(data=data){
-
         $("#testBenchTable").empty();
         $("#testBenchTable").append(title(data));
         $("#testBenchTable").append(labels(data));
@@ -153,7 +180,7 @@ var data={n:0,inputs:[],outputs:[]}
     }
 
     function generateTestData(){
-        var data = $('table').tableToJSON({allowHTML:true,ignoreColumns:[0]});
+        var data = $('table').tableToJSON({allowHTML:true,ignoreColumns: [0]});
         var type={};
         i=0;
         var attrs=[]
@@ -182,6 +209,7 @@ var data={n:0,inputs:[],outputs:[]}
             var attr=attrs[i];
             testData[type[attr]].push(d[attr]);
         }
+        console.log(data);
         return testData;
     }
 
@@ -193,6 +221,7 @@ var data={n:0,inputs:[],outputs:[]}
         data.outputs.push( { label:"out"+(data.outputs.length+1),bitWidth:1,values:Array.from(Array(data.n), () => "0") })
         return data;
     }
+    // adds to data
     function addCase(data){
         for(var i=0;i<data.inputs.length;i++){
             data.inputs[i].values.push("0");
@@ -219,13 +248,24 @@ var data={n:0,inputs:[],outputs:[]}
 
     function generateDataAndCopyButton(){
 
+    	newGroup();
         $("#testDataDiv").show();
-        $("#testData").val(JSON.stringify(generateTestData()));
+        if(mode === "comb") dataSoFar.sets[0] = generateTestData();
+        $("#testData").val(JSON.stringify(dataSoFar));
         setTimeout(function(){$("#testData").select();document.execCommand("copy")},100) ;
     }
 
     function loadDataButton() {
         loadData(JSON.parse(prompt("Enter JSON TestBenchData")));
+    }
+
+    function newGroup() {
+    	if(mode === "comb") return;
+    	if(generateTestData().n > 0) dataSoFar.sets.push(generateTestData());
+    	console.log(dataSoFar);
+    	$("#testBenchTable tr").slice(2).remove();
+        $('#dsfTA').val(JSON.stringify(dataSoFar));
+    	// $("#testBenchTable").append(`<tr> <td style='text-align: center;' colspan="100%">SET ${set_no++}</td> </tr>`);
     }
 
     $("#testDataDiv").hide();

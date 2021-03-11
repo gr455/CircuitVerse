@@ -25,11 +25,12 @@ export default class TB_Input extends CircuitElement {
         this.objectType = 'TB_Input';
         this.scope.TB_Input.push(this);
         this.setIdentifier(identifier || 'Test1');
-        this.testData = testData || { inputs: [], outputs: [], n: 0 };
+        this.testData = testData || { type: "comb", sets: [{ inputs: [], outputs: [], n: 0 }] };
         this.clockInp = new Node(0, 20, 0, this, 1);
         this.outputs = [];
         this.running = false; // if tests are undergo
         this.iteration = 0;
+        this.set = 0;
         this.setup();
     }
 
@@ -47,7 +48,7 @@ export default class TB_Input extends CircuitElement {
         this.rightDimensionX = 120;
 
         this.upDimensionY = 0;
-        this.downDimensionY = 40 + this.testData.inputs.length * 20;
+        this.downDimensionY = 40 + this.testData.sets[0].inputs.length * 20;
     }
 
     /**
@@ -61,20 +62,25 @@ export default class TB_Input extends CircuitElement {
         this.deleteNodes();
         this.nodeList = [];
         this.nodeList.push(this.clockInp);
-        this.testData = this.testData || { inputs: [], outputs: [], n: 0 };
+        this.testData = this.testData || { type: "comb", sets: [{ inputs: [], outputs: [], n: 0 }] } //{ inputs: [], outputs: [], n: 0 };
         // this.clockInp = new Node(0,20, 0,this,1);
-
+        console.log(this.testData);
+        // if(this.testData.type === "comb"){
+        //     this.testData = this.testData.sets[0];
+        // }
         this.setDimensions();
 
         this.prevClockState = 0;
         this.outputs = [];
 
-        for (var i = 0; i < this.testData.inputs.length; i++) {
-            this.outputs.push(new Node(this.rightDimensionX, 30 + i * 20, 1, this, this.testData.inputs[i].bitWidth, this.testData.inputs[i].label));
-        }
+        if(true){
+            for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
+                this.outputs.push(new Node(this.rightDimensionX, 30 + i * 20, 1, this, this.testData.sets[0].inputs[i].bitWidth, this.testData.sets[0].inputs[i].label));
+            }
 
-        for (var i = 0; i < this.scope.TB_Output.length; i++) {
-            if (this.scope.TB_Output[i].identifier == this.identifier) { this.scope.TB_Output[i].setup(); }
+            for (var i = 0; i < this.scope.TB_Output.length; i++) {
+                if (this.scope.TB_Output[i].identifier == this.identifier) { this.scope.TB_Output[i].setup(); }
+            }
         }
     }
 
@@ -94,6 +100,7 @@ export default class TB_Input extends CircuitElement {
     resetIterations() {
         this.iteration = 0;
         this.prevClockState = 0;
+        this.set = 0;
     }
 
     /**
@@ -101,20 +108,44 @@ export default class TB_Input extends CircuitElement {
      * function to resolve the testbench input adds
      */
     resolve() {
-        if (this.clockInp.value != this.prevClockState) {
-            this.prevClockState = this.clockInp.value;
-            if (this.clockInp.value == 1 && this.running) {
-                if (this.iteration < this.testData.n) {
-                    this.iteration++;
-                } else {
-                    this.running = false;
+        if(this.testData.type === "comb"){
+            if (this.clockInp.value != this.prevClockState) {
+                this.prevClockState = this.clockInp.value;
+                if (this.clockInp.value == 1 && this.running) {
+                    if (this.iteration < this.testData.sets[0].n) {
+                        this.iteration++;
+                    } else {
+                        this.running = false;
+                    }
+                }
+            }
+            if (this.running && this.iteration) {
+                for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
+                    this.outputs[i].value = parseInt(this.testData.sets[0].inputs[i].values[this.iteration - 1], 2);
+                    simulationArea.simulationQueue.add(this.outputs[i]);
                 }
             }
         }
-        if (this.running && this.iteration) {
-            for (var i = 0; i < this.testData.inputs.length; i++) {
-                this.outputs[i].value = parseInt(this.testData.inputs[i].values[this.iteration - 1], 2);
-                simulationArea.simulationQueue.add(this.outputs[i]);
+        else if(this.testData.type === "seq"){
+            if (this.clockInp.value != this.prevClockState) {
+                this.prevClockState = this.clockInp.value;
+                if (this.clockInp.value == 1 && this.running) {
+                    if(this.set < this.testData.sets.length){
+                        if (this.iteration < this.testData.sets[this.set].n) {
+                            this.iteration++;
+                        } else {
+                            this.set ++;
+                            this.iteration = 0;
+                        }
+                    }
+                    else this.running = false;
+                }
+            }
+            if (this.running && this.iteration) {
+                for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
+                    this.outputs[i].value = parseInt(this.testData.sets[this.set].inputs[i].values[this.iteration - 1], 2);
+                    simulationArea.simulationQueue.add(this.outputs[i]);
+                }
             }
         }
     }
@@ -215,8 +246,9 @@ export default class TB_Input extends CircuitElement {
         ctx.fillStyle = 'black';
         fillText(ctx, `${this.identifier} [INPUT]`, xx + this.rightDimensionX / 2, yy + 14, 10);
 
-        fillText(ctx, ['Not Running', 'Running'][+this.running], xx + this.rightDimensionX / 2, yy + 14 + 10 + 20 * this.testData.inputs.length, 10);
-        fillText(ctx, `Case: ${this.iteration}`, xx + this.rightDimensionX / 2, yy + 14 + 20 + 20 * this.testData.inputs.length, 10);
+        fillText(ctx, ['Not Running', 'Running'][+this.running], xx + this.rightDimensionX / 2, yy + 14 + 10 + 20 * this.testData.sets[0].inputs.length, 10);
+
+        fillText(ctx, `Case: ${this.iteration}`, xx + this.rightDimensionX / 2, yy + 14 + 20 + 20 * this.testData.sets[0].inputs.length, 10);
         // fillText(ctx, "Case: "+this.iteration, xx  , yy + 20+14, 10);
         ctx.fill();
 
@@ -225,9 +257,9 @@ export default class TB_Input extends CircuitElement {
         ctx.textAlign = 'right';
         ctx.fillStyle = 'blue';
         ctx.beginPath();
-        for (var i = 0; i < this.testData.inputs.length; i++) {
+        for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
             // ctx.beginPath();
-            fillText(ctx, this.testData.inputs[i].label, this.rightDimensionX - 5 + xx, 30 + i * 20 + yy + 4, 10);
+            fillText(ctx, this.testData.sets[0].inputs[i].label, this.rightDimensionX - 5 + xx, 30 + i * 20 + yy + 4, 10);
         }
 
         ctx.fill();
@@ -236,8 +268,8 @@ export default class TB_Input extends CircuitElement {
             ctx.textAlign = 'left';
             ctx.fillStyle = 'blue';
             ctx.beginPath();
-            for (var i = 0; i < this.testData.inputs.length; i++) {
-                fillText(ctx, this.testData.inputs[i].values[this.iteration - 1], 5 + xx, 30 + i * 20 + yy + 4, 10);
+            for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
+                fillText(ctx, this.testData.sets[this.set].inputs[i].values[this.iteration - 1], 5 + xx, 30 + i * 20 + yy + 4, 10);
             }
 
             ctx.fill();
