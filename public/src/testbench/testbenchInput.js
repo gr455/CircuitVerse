@@ -1,7 +1,7 @@
 import CircuitElement from '../circuitElement';
 import simulationArea from '../simulationArea';
 import { correctWidth, lineTo, moveTo, fillText } from '../canvasApi';
-import Node, { findNode } from '../node';
+import Node, { findNode, connectWireLess } from '../node';
 import plotArea from '../plotArea';
 
 
@@ -31,6 +31,7 @@ export default class TB_Input extends CircuitElement {
         this.running = false; // if tests are undergo
         this.iteration = 0;
         this.set = 0;
+        this.outputList = [];
         this.setup();
     }
 
@@ -49,6 +50,36 @@ export default class TB_Input extends CircuitElement {
 
         this.upDimensionY = 0;
         this.downDimensionY = 40 + this.testData.sets[0].inputs.length * 20;
+    }
+
+    bindIO() {
+
+        for(let i = 0; i < this.testData.sets[0].inputs.length; i++){
+            for(let inp of globalScope.Input){
+                if(this.testData.sets[0].inputs[i].label === inp.label){
+                    this.outputList.push(inp);
+                    console.log(inp.label + " paired");
+                }
+            }
+        }
+
+        for(let inp of this.scope.Input){
+            if(inp.label === "TBreset"){
+                console.log("reset paired");
+                this.resetInp = inp;
+            }
+        }
+        for(let clk of globalScope.Clock){
+            if("CLOCK" === clk.label){
+                console.log("clock paired");
+                this.clockInp.connectWireLess(clk.nodeList[0]);
+                break;
+            }
+        }
+
+        if(this.outputList.length != this.testData.sets[0].inputs.length){
+            alert("All inputs/outputs not present in the project used for testing");
+        }
     }
 
     /**
@@ -71,20 +102,22 @@ export default class TB_Input extends CircuitElement {
 
         this.prevClockState = 0;
         this.outputs = [];
+        this.outputList = [];
 
         if(true){
-            var oup = 0;
-            for (; oup < this.testData.sets[0].inputs.length; oup++) {
-                this.outputs.push(new Node(this.rightDimensionX, 30 + oup * 20, 1, this, this.testData.sets[0].inputs[oup].bitWidth, this.testData.sets[0].inputs[oup].label));
-            }
+            // var oup = 0;
+            // for (; oup < this.testData.sets[0].inputs.length; oup++) {
+            //     this.outputs.push(new Node(this.rightDimensionX, 30 + oup * 20, 1, this, this.testData.sets[0].inputs[oup].bitWidth, this.testData.sets[0].inputs[oup].label));
+            // }
+            this.bindIO();
 
             for (var i = 0; i < this.scope.TB_Output.length; i++) {
                 if (this.scope.TB_Output[i].identifier == this.identifier) { this.scope.TB_Output[i].setup(); }
             }
-            this.resetInp = new Node(this.rightDimensionX, 30 + oup * 20, 1, this, 1, "reset");
-            this.outputs.push(this.resetInp);
-            this.resetInp.value = 0;
-            simulationArea.simulationQueue.add(this.resetInp);
+            // this.resetInp = new Node(this.rightDimensionX, 30 + oup * 20, 1, this, 1, "reset");
+            // this.outputs.push(this.resetInp);
+            // this.resetInp.value = 0;
+            // simulationArea.simulationQueue.add(this.resetInp);
         }
     }
 
@@ -113,6 +146,7 @@ export default class TB_Input extends CircuitElement {
      * function to resolve the testbench input adds
      */
     resolve() {
+        console.log("resolving tb");
         if(this.testData.type === "comb"){
             if (this.clockInp.value != this.prevClockState) {
                 this.prevClockState = this.clockInp.value;
@@ -126,18 +160,19 @@ export default class TB_Input extends CircuitElement {
             }
             if (this.running && this.iteration) {
                 for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
-                    this.outputs[i].value = parseInt(this.testData.sets[0].inputs[i].values[this.iteration - 1], 2);
-                    simulationArea.simulationQueue.add(this.outputs[i]);
+                    this.outputList[i].state = parseInt(this.testData.sets[0].inputs[i].values[this.iteration - 1], 2);
+                    simulationArea.simulationQueue.add(this.outputList[i]);
                 }
             }
         }
         else if(this.testData.type === "seq"){
+            console.log(this.clockInp.value);
             if (this.clockInp.value != this.prevClockState) {
+                console.log("clocked");
                 this.prevClockState = this.clockInp.value;
                 if (this.clockInp.value == 1 && this.running) {
-                    if(this.resetInp.value === 1){
-                        this.resetInp.value = 0;
-                        simulationArea.simulationQueue.add(this.resetInp);
+                    if(this.resetInp.state === 1){
+                        this.resetInp.state = 0;
                     }
                     if(this.set < this.testData.sets.length){
                         if (this.iteration < this.testData.sets[this.set].n) {
@@ -145,8 +180,7 @@ export default class TB_Input extends CircuitElement {
                         } else {
                             this.set ++;
                             this.iteration = 0;
-                            this.resetInp.value = 1;
-                            simulationArea.simulationQueue.add(this.resetInp);
+                            this.resetInp.state = 1;
                         }
                     }
                     else this.running = false;
@@ -154,8 +188,8 @@ export default class TB_Input extends CircuitElement {
             }
             if (this.running && this.iteration) {
                 for (var i = 0; i < this.testData.sets[0].inputs.length; i++) {
-                    this.outputs[i].value = parseInt(this.testData.sets[this.set].inputs[i].values[this.iteration - 1], 2);
-                    simulationArea.simulationQueue.add(this.outputs[i]);
+                    this.outputList[i].state = parseInt(this.testData.sets[this.set].inputs[i].values[this.iteration - 1], 2);
+                    simulationArea.simulationQueue.add(this.outputList[i]);
                 }
             }
         }
@@ -183,7 +217,7 @@ export default class TB_Input extends CircuitElement {
         var data = {
             constructorParamaters: [this.direction, this.identifier, this.testData],
             nodes: {
-                outputs: this.outputs.map(findNode),
+                outputs: this.outputList.map(findNode),
                 clockInp: findNode(this.clockInp),
             },
         };

@@ -57,6 +57,17 @@ export default class TB_Output extends CircuitElement {
         if (this.testBenchInput) { this.downDimensionY = 40 + this.testBenchInput.testData.sets[0].outputs.length * 20; }
     }
 
+    bindIO() {
+        for(let i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++){
+            for(let oup of globalScope.Output){
+                if(this.testBenchInput.testData.sets[0].outputs[i].label === oup.label){
+                    this.inputs.push(oup.nodeList[0]);
+                    console.log(oup.label + " paired");
+                }
+            }
+        }
+    }
+
     setup() {
         // this.iteration = 0;
         // this.running = false;
@@ -76,11 +87,13 @@ export default class TB_Output extends CircuitElement {
 
         this.setDimensions();
 
-        if (this.testBenchInput) {
-            for (var i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++) {
-                this.inputs.push(new Node(0, 30 + i * 20, NODE_INPUT, this, this.testBenchInput.testData.sets[0].outputs[i].bitWidth, this.testBenchInput.testData.sets[0].outputs[i].label));
-            }
-        }
+        // if (this.testBenchInput) {
+        //     for (var i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++) {
+        //         this.inputs.push(new Node(0, 30 + i * 20, NODE_INPUT, this, this.testBenchInput.testData.sets[0].outputs[i].bitWidth, this.testBenchInput.testData.sets[0].outputs[i].label));
+        //     }
+        // }
+        if(this.testBenchInput)
+            this.bindIO();
     }
 
     customSave() {
