@@ -1,4 +1,4 @@
-import { fullView, deleteSelected } from './ux';
+import { fullView, deleteSelected, testBench } from './ux';
 import { createSubCircuitPrompt } from './subcircuit';
 import save from './data/save';
 import load from './data/load';
@@ -33,6 +33,7 @@ logixFunction.saveVerilogCode = saveVerilogCode;
 logixFunction.resetVerilogCode = resetVerilogCode;
 logixFunction.generateVerilog = generateVerilog;
 logixFunction.bitconverter = bitConverterDialog;
+logixFunction.testBench = testBench;
 export default logixFunction;
 
 // Hack to restart tour guide

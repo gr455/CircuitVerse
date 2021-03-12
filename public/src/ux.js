@@ -618,6 +618,38 @@ export function fillSubcircuitElements() {
     });
 } 
 
+export function testBench() {
+    $('#testBenchDiv').empty();
+    $('#testBenchDiv').append("<p>Enter test JSON: <input id='testJSON' type='text'  placeHolder='Enter json'></p>");
+    $('#testBenchDiv').dialog({
+        resizable:false,
+        width: 'auto',
+        buttons: [
+            {
+                text: 'Next',
+                click() {
+                    var testJSON = $("#testJSON").val();
+                    const tbI = new modules.TB_Input(0, 0, globalScope, 'RIGHT', "randomstring", JSON.parse(testJSON));
+                    const tbO = new modules.TB_Output(0, 0, globalScope, 'RIGHT', "randomstring");
+
+                    tbI.scope.TB_Input.push(tbI);
+                    tbO.scope.TB_Output.push(tbO);
+                    tbI.toggleState();
+                    $('#testBenchDiv').append("<p>Running tests, please wait</p>");
+                },
+            },
+        ],
+    });
+}
+
+export function testFinishedCallback(results) {
+    $('#testBenchDiv').empty();
+    $('#testBenchDiv').append("<h4>Test Results</h4>");
+    $('#testBenchDiv').append(`<p>${results || "All tests passed!"}</p>`);
+    for(let bench of globalScope.TB_Output) bench.cleanDelete();
+    for(let bench of globalScope.TB_Input) bench.cleanDelete();
+}
+
 async function postUserIssue(message) {
 
     var img = generateImage("jpeg", "full", false, 1, false).split(',')[1];

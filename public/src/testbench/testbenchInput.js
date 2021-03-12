@@ -3,6 +3,7 @@ import simulationArea from '../simulationArea';
 import { correctWidth, lineTo, moveTo, fillText } from '../canvasApi';
 import Node, { findNode, connectWireLess } from '../node';
 import plotArea from '../plotArea';
+import { testFinishedCallback } from '../ux';
 
 
 /**
@@ -33,6 +34,7 @@ export default class TB_Input extends CircuitElement {
         this.set = 0;
         this.outputList = [];
         this.setup();
+        this.lastTestResult = "";
     }
 
     /**
@@ -126,7 +128,6 @@ export default class TB_Input extends CircuitElement {
      * toggles state by simply negating this.running so that test cases stop
      */
     toggleState() {
-        console.log(this.running);
         this.running = !this.running;
         this.prevClockState = 0;
     }
@@ -146,7 +147,6 @@ export default class TB_Input extends CircuitElement {
      * function to resolve the testbench input adds
      */
     resolve() {
-        console.log("resolving tb");
         if(this.testData.type === "comb"){
             if (this.clockInp.value != this.prevClockState) {
                 this.prevClockState = this.clockInp.value;
@@ -155,6 +155,8 @@ export default class TB_Input extends CircuitElement {
                         this.iteration++;
                     } else {
                         this.running = false;
+                        testFinishedCallback(this.lastTestResult);
+
                     }
                 }
             }
@@ -166,9 +168,7 @@ export default class TB_Input extends CircuitElement {
             }
         }
         else if(this.testData.type === "seq"){
-            console.log(this.clockInp.value);
             if (this.clockInp.value != this.prevClockState) {
-                console.log("clocked");
                 this.prevClockState = this.clockInp.value;
                 if (this.clockInp.value == 1 && this.running) {
                     if(this.resetInp.state === 1){
@@ -183,7 +183,10 @@ export default class TB_Input extends CircuitElement {
                             this.resetInp.state = 1;
                         }
                     }
-                    else this.running = false;
+                    else{
+                        this.running = false;
+                        testFinishedCallback(this.lastTestResult);
+                    }
                 }
             }
             if (this.running && this.iteration) {

@@ -41,6 +41,7 @@ export default class TB_Output extends CircuitElement {
         this.setIdentifier(identifier || 'Test1');
         this.inputs = [];
         this.testBenchInput = undefined;
+        this.errorPair = []
 
         this.setup();
     }
@@ -216,7 +217,17 @@ export default class TB_Output extends CircuitElement {
                 for (var i = 0; i < this.testBenchInput.testData.sets[0].outputs.length; i++) {
                     if (this.inputs[i].value != undefined) {
                         ctx.beginPath();
-                        if (this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1] == 'x' || parseInt(this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1], 2) == this.inputs[i].value) { ctx.fillStyle = 'green'; } else { ctx.fillStyle = 'red'; }
+                        if (this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1] == 'x' || parseInt(this.testBenchInput.testData.sets[0].outputs[i].values[this.testBenchInput.iteration - 1], 2) == this.inputs[i].value) { 
+                            ctx.fillStyle = 'green';
+                        }
+                        else {
+                            ctx.fillStyle = 'red';
+                            if(!(this.errorPair.some(pair => pair.includes(this.testBenchInput.set) && pair.includes(this.testBenchInput.iteration) ))){
+                                this.testBenchInput.lastTestResult += `Failed set ${this.testBenchInput.set} test ${this.testBenchInput.iteration}<br>`;
+                                this.errorPair.push([this.testBenchInput.set, this.testBenchInput.iteration]);
+                                console.log(this.errorPair.includes([this.testBenchInput.set, this.testBenchInput.iteration]));
+                            }
+                        }
                         fillText(ctx, dec2bin(this.inputs[i].value, this.inputs[i].bitWidth), xx + this.rightDimensionX / 2, 30 + i * 20 + yy + 4, 10);
                         ctx.fill();
                     } else {
