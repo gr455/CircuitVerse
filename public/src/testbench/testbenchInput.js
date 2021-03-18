@@ -35,6 +35,7 @@ export default class TB_Input extends CircuitElement {
         this.outputList = [];
         this.setup();
         this.lastTestResult = "";
+        this.runningContext = "simulator";
     }
 
     /**
@@ -155,7 +156,7 @@ export default class TB_Input extends CircuitElement {
                         this.iteration++;
                     } else {
                         this.running = false;
-                        testFinishedCallback(this.lastTestResult);
+                        testFinishedCallback(this.lastTestResult, this.runningContext);
 
                     }
                 }
@@ -185,7 +186,7 @@ export default class TB_Input extends CircuitElement {
                     }
                     else{
                         this.running = false;
-                        testFinishedCallback(this.lastTestResult);
+                        testFinishedCallback(this.lastTestResult, this.runningContext);
                     }
                 }
             }

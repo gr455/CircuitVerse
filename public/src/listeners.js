@@ -363,6 +363,7 @@ export default function startListeners() {
             e.preventDefault();
         }
     });
+    
 
     // 'drag and drop' event listener for subcircuit elements in layout mode 
     $('#subcircuitMenu').on('dragstop', '.draggableSubcircuitElement', function(event, ui){

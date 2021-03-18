@@ -67,6 +67,12 @@
                   cssLink.rel = 'stylesheet';
                   cssLink.type ='text/css';
                   frames['assignmentPreview'].document.head.appendChild(cssLink);
+                });
+
+                $('#runTestButton').on('click', function (e) {
+                  e.preventDefault()
+                  let frameWindow = document.getElementById('assignmentPreview').contentWindow;
+
                 })
               });
             </script>
@@ -96,6 +102,11 @@
                   <h6 class="assignments-project-decription-heading">Description:</h6>
                   <p id="project-description"></p>
                 </div>
+                <div class="row assignments-submission-row test-results">
+                  <h6 class="assignments-project-decription-heading">TestResults:</h6>
+                  <p id="test-results"></p>
+                </div>
+                <button id="runTestButton">Run Test</button>
               </div>
 
               <% if policy(@assignment).can_be_graded? %>

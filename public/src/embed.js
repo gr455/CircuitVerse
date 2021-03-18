@@ -5,7 +5,7 @@ import simulationArea from './simulationArea';
 import {
     scheduleUpdate, wireToBeCheckedSet, updateCanvasSet, gridUpdateSet,
 } from './engine';
-import { prevPropertyObjGet, prevPropertyObjSet } from './ux';
+import { prevPropertyObjGet, prevPropertyObjSet, runTestBench } from './ux';
 import { ZoomIn, ZoomOut} from './listeners';
 
 circuitProperty.toggleFullScreen = toggleFullScreen;
@@ -42,6 +42,13 @@ $(document).ready(() => {
     $('#zoom-in-embed').on('click', () => ZoomIn());
 
     $('#zoom-out-embed').on('click', () => ZoomOut());
+    window.addEventListener('message', (message) => {
+        // if(message.origin != window.origin) return;
+        console.log(message);
+        if(message.data.type === 'runTest'){
+            runTestBench(message.data.testJSON, globalScope, "assignment");
+        }
+    }, false);
 });
 
 // Full screen toggle helper function

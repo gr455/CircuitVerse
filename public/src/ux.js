@@ -629,12 +629,7 @@ export function testBench() {
                 text: 'Next',
                 click() {
                     var testJSON = $("#testJSON").val();
-                    const tbI = new modules.TB_Input(0, 0, globalScope, 'RIGHT', "randomstring", JSON.parse(testJSON));
-                    const tbO = new modules.TB_Output(0, 0, globalScope, 'RIGHT', "randomstring");
-
-                    tbI.scope.TB_Input.push(tbI);
-                    tbO.scope.TB_Output.push(tbO);
-                    tbI.toggleState();
+                    runTestBench(testJSON, globalScope);
                     $('#testBenchDiv').append("<p>Running tests, please wait</p>");
                 },
             },
@@ -642,12 +637,32 @@ export function testBench() {
     });
 }
 
-export function testFinishedCallback(results) {
-    $('#testBenchDiv').empty();
-    $('#testBenchDiv').append("<h4>Test Results</h4>");
-    $('#testBenchDiv').append(`<p>${results || "All tests passed!"}</p>`);
-    for(let bench of globalScope.TB_Output) bench.cleanDelete();
-    for(let bench of globalScope.TB_Input) bench.cleanDelete();
+export function runTestBench(testJSON, scope=globalScope, context="simulator") {
+	const tbI = new modules.TB_Input(0, 0, scope, 'RIGHT', "randomstring", JSON.parse(testJSON));
+    const tbO = new modules.TB_Output(0, 0, scope, 'RIGHT', "randomstring");
+   	tbI.runningContext = context;
+
+    tbI.scope.TB_Input.push(tbI);
+    tbO.scope.TB_Output.push(tbO);
+    tbI.toggleState();
+}
+
+export function testFinishedCallback(results, context="simulator") {
+
+	if(context === "simulator"){
+	    $('#testBenchDiv').empty();
+	    $('#testBenchDiv').append("<h4>Test Results</h4>");
+	    $('#testBenchDiv').append(`<p>${results || "All tests passed!"}</p>`);
+	    for(let bench of globalScope.TB_Output) bench.cleanDelete();
+	    for(let bench of globalScope.TB_Input) bench.cleanDelete();
+	}
+	
+	else if(context === "assignment"){
+		for(let bench of globalScope.TB_Output) bench.cleanDelete();
+	    for(let bench of globalScope.TB_Input) bench.cleanDelete();
+		console.log("Tests Finished");
+		window.parent.document.getElementById('test-results').innerText = results || "All tests passed!";
+	}
 }
 
 async function postUserIssue(message) {
