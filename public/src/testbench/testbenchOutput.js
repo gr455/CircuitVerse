@@ -224,6 +224,7 @@ export default class TB_Output extends CircuitElement {
                             ctx.fillStyle = 'red';
                             if(!(this.errorPair.some(pair => pair.includes(this.testBenchInput.set) && pair.includes(this.testBenchInput.iteration) ))){
                                 this.testBenchInput.lastTestResult += `Failed set ${this.testBenchInput.set} test ${this.testBenchInput.iteration}<br>`;
+                                console.log('failed');
                                 this.errorPair.push([this.testBenchInput.set, this.testBenchInput.iteration]);
                                 console.log(this.errorPair.includes([this.testBenchInput.set, this.testBenchInput.iteration]));
                             }

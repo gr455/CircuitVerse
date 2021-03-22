@@ -35,7 +35,7 @@ export default class TB_Input extends CircuitElement {
         this.outputList = [];
         this.setup();
         this.lastTestResult = "";
-        this.runningContext = "simulator";
+        this.runningContext = {runOn: "simulator"};
     }
 
     /**

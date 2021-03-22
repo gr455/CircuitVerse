@@ -637,31 +637,33 @@ export function testBench() {
     });
 }
 
-export function runTestBench(testJSON, scope=globalScope, context="simulator") {
-	const tbI = new modules.TB_Input(0, 0, scope, 'RIGHT', "randomstring", JSON.parse(testJSON));
-    const tbO = new modules.TB_Output(0, 0, scope, 'RIGHT', "randomstring");
+export function runTestBench(testJSON, scope=globalScope, context={runOn: "simulator"}) {
+	let tbI = new modules.TB_Input(200, 210, scope, 'RIGHT', `randomstring${context.id || ""}`, JSON.parse(testJSON));
+    let tbO = new modules.TB_Output(400, 210, scope, 'RIGHT', `randomstring${context.id || ""}`);
+    for(let tb of scope.TB_Input) console.log(tb);
+	console.log(`was called by ${context.id}`);
    	tbI.runningContext = context;
 
-    tbI.scope.TB_Input.push(tbI);
-    tbO.scope.TB_Output.push(tbO);
     tbI.toggleState();
 }
 
-export function testFinishedCallback(results, context="simulator") {
+export function testFinishedCallback(results, context={runOn: "simulator"}, scope=globalScope) {
 
-	if(context === "simulator"){
+	if(context.runOn === "simulator"){
 	    $('#testBenchDiv').empty();
 	    $('#testBenchDiv').append("<h4>Test Results</h4>");
 	    $('#testBenchDiv').append(`<p>${results || "All tests passed!"}</p>`);
-	    for(let bench of globalScope.TB_Output) bench.cleanDelete();
-	    for(let bench of globalScope.TB_Input) bench.cleanDelete();
+	    for(let bench of scope.TB_Output) bench.cleanDelete();
+	    for(let bench of scope.TB_Input) bench.cleanDelete();
 	}
 	
-	else if(context === "assignment"){
-		for(let bench of globalScope.TB_Output) bench.cleanDelete();
-	    for(let bench of globalScope.TB_Input) bench.cleanDelete();
-		console.log("Tests Finished");
-		window.parent.document.getElementById('test-results').innerText = results || "All tests passed!";
+	else if(context.runOn === "assignment"){
+		console.log(results);
+		window.parent.document.getElementById('test-results').innerText += JSON.stringify({id: context.id, results: results});
+		window.parent.$(`#${context.id}`).css("background-color", results === "" ? "green":"red");
+		for(let bench of scope.TB_Output) bench.cleanDelete();
+	    for(let bench of scope.TB_Input) bench.cleanDelete();
+	    window.parent.$(`#t${context.id}`).remove();
 	}
 }
 

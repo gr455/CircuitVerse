@@ -42,11 +42,12 @@ $(document).ready(() => {
     $('#zoom-in-embed').on('click', () => ZoomIn());
 
     $('#zoom-out-embed').on('click', () => ZoomOut());
+    
     window.addEventListener('message', (message) => {
-        // if(message.origin != window.origin) return;
-        console.log(message);
+        if(message.origin !== window.origin) return;
         if(message.data.type === 'runTest'){
-            runTestBench(message.data.testJSON, globalScope, "assignment");
+            console.log(window.globalScope);
+            runTestBench(message.data.testJSON, window.globalScope, {runOn: "assignment", id: message.data.id});
         }
     }, false);
 });

@@ -68,11 +68,27 @@
                   cssLink.type ='text/css';
                   frames['assignmentPreview'].document.head.appendChild(cssLink);
                 });
-
                 $('#runTestButton').on('click', function (e) {
                   e.preventDefault()
-                  let frameWindow = document.getElementById('assignmentPreview').contentWindow;
-
+                  window.parent.document.getElementById('test-results').innerText = ""
+                  const testJSON = $("#testJSON").val();
+                  for (let submission of $('.list-group-item-action')){
+                    $(`<iframe id="t${submission.id}" src="/simulator/${submission.id}" style="visibility: hidden;" />`).appendTo('body');
+                    // $('.accordion').html(`<iframe src="/simulator/${submission.id}" id="t${submission.id}" hidden="true"></iframe>`);
+                    $(`#t${submission.id}`).contents().get(0).location.href = `/simulator/${submission.id}`;
+                    $(`#t${submission.id}`).on("load", () => {
+                      console.log("frame ready");
+                      checkLoad();
+                      function checkLoad(){
+                        setTimeout(() => {
+                          if($(`#t${submission.id}`)[0].contentWindow.loading === true) checkLoad();
+                          else {
+                            document.getElementById(`t${submission.id}`).contentWindow.postMessage({type: "runTest", id: submission.id, testJSON: testJSON}, "*");
+                          }
+                        } , 3000)
+                      }
+                    });
+                  }
                 })
               });
             </script>
@@ -102,11 +118,12 @@
                   <h6 class="assignments-project-decription-heading">Description:</h6>
                   <p id="project-description"></p>
                 </div>
-                <div class="row assignments-submission-row test-results">
+                <div class="row assignments-submission-row" hidden="true">
                   <h6 class="assignments-project-decription-heading">TestResults:</h6>
                   <p id="test-results"></p>
                 </div>
-                <button id="runTestButton">Run Test</button>
+                <p>Test JSON: <input name="testJSON" id="testJSON" /></p>
+                <button id="runTestButton">Run Tests</button>
               </div>
 
               <% if policy(@assignment).can_be_graded? %>
