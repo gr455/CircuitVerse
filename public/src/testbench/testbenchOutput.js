@@ -132,6 +132,7 @@ export default class TB_Output extends CircuitElement {
     }
 
     customDraw() {
+        console.log("drawing");
         var ctx = simulationArea.context;
         ctx.beginPath();
         ctx.strokeStyle = 'grey';

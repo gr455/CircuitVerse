@@ -1,0 +1,424 @@
+<body style="font-family: sans-serif;">
+	<div style="position: absolute; top: 20px;">
+			<a href="/"><img src="http://localhost:3000/assets/CircuitVerse-594a52dae58e972c345306a3177e96ebb62ff935302b6364a83ebd8a017ab16d.svg">
+		</div></a>
+	<!-- <div class="sidebar">
+		<br><br>
+		<h4><b>TESTBENCH OPTIONS</b></h4>
+		<div class="tb-button-group" style="position:relative; top: 100px;">
+			<button class="btn btn-primary" onclick="addInpButton()">Add Input</button>
+			<button class="btn btn-primary" onclick="addOutputButton()">Add Output</button>
+			<button class="btn btn-primary" onclick="addCaseButton()">Add Case</button><br><br>
+			<button class="btn btn-primary" onclick="addCaseButton()">New Group</button>
+			<button class="btn btn-primary" onclick="loadDataButton()">Load Data</button><br><br>
+			<button class="btn btn-primary" onclick="newGroup()" id="tb-new-group" style="visibility: hidden;">New Set</button><br><br>
+			<button class="btn btn-success" onclick="generateDataAndCopyButton()" style="position: relative; top: 30px;">Save Test</button>
+		</div>
+	</div> -->
+	<br><br>
+	<div class="container" style="position: relative;">
+		<h1 style="text-align: center"><b>Create Testbench</b></h1><br>
+	<!-- <div class="tabcontent"> --><!-- Seq Mode</div>
+	<div class="tabcontent">Comb Mode</div> -->
+		<button class="tablink" id="seqSelect" onclick="changeMode('seq')">Sequential Test</button>
+		<button class="tablink tab-selected" id="combSelect" onclick="changeMode('comb')">Combinational Test</button>
+	<!-- </div> -->
+	<br><br><br><br>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/table-to-json@1.0.0/lib/jquery.tabletojson.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+	<!-- <div class="container"> -->
+		<table style="width:100%" contenteditable="true" id="upperTitle" style="visibility: hidden;">
+		</table>
+		<!-- aaf and afa -->
+		<table style="width:100%" contenteditable="true" class="table" id="testBenchTable">
+		    <tr>
+		    	<th colspan="1"></th>
+		        <th colspan="3">INPUTS <a href="#" onclick="addInpButton()"><span class="glyphicon glyphicon-plus-sign" style="color: #aaf"></span></a></th>
+		        <th colspan="3">OUTPUTS <a href="#" onclick="addInpButton()"><span class="glyphicon glyphicon-plus-sign" style="color: #8d8"></span></a></th>
+		    </tr>
+		    <tr>
+		    	<th>Label</th>
+		        <th style="background-color: #aaf">inp1</th>
+		        <th style="background-color: #aaf">inp2</th>
+		        <th style="background-color: #aaf">inp3</th>
+		        <th style="background-color: #afa">out1</th>
+		        <th style="background-color: #afa">out2</th>
+		        <th style="background-color: #afa">out3</th>
+		    </tr>
+		    <tr>
+		        <td>Bitwidth</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		    </tr>
+		    <tr>
+		        <td>1</td>
+		        <td>0</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>0</td>
+		        <td>1</td>
+		    </tr>
+		    <tr>
+		        <td>2 <span class="glyphicon glyphicon-minus-sign" style="color: red"></td>
+		        <td>0</td>
+		        <td>1</td>
+		        <td>0</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		    </tr>
+		    <tr>
+		        <td>3</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>0</td>
+		        <td>1</td>
+		    </tr>
+		    <tr>
+		        <td>4</td>
+		        <td>0</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>1</td>
+		        <td>0</td>
+		        <td>0</td>
+		    </tr>
+		</table>
+		<div class="buttons-alignment" style="display: inline-flex;">
+			<button class="lower-button" onclick="addCaseButton()" style="font-size: 25px;">+</button>
+			<button class="lower-button">New Group</button>
+		</div>
+		<div style="float: right; display: inline-block;">
+			<button class="lower-button" style="background-color: #42b983; color: white; border: 1px solid gray; min-width: 70px;">Save</button>
+		</div>
+		
+
+
+		<div id="testDataDiv" style="font-size:16px;width:600px,height:300px" >
+		    <textarea id="testData" cols="100" >
+		        </textarea>
+		    <p>Data Copied successfully</p>
+		</div>
+
+
+		<!-- <div id="dsf" style="font-size:16px;width:600px,height:300px" >
+			<p>Data so far:</p>
+		    <textarea id="dsfTA" cols="100" >
+		        </textarea>
+		</div> -->
+	</div>
+
+</body>
+<style>
+	.lower-button {
+		height: 40px;
+		width: auto;
+		min-width: 40px;
+	  	background-color: #ffffff;
+	  	border: 2px solid black;
+		color: black;
+		/*padding: 20px;*/
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		/*font-size: 16px;*/
+		margin: 4px 2px;
+		border-radius: 4px;
+	}
+
+	.buttons-alignment {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+	body {
+
+	}
+	.sidebar {
+		position: fixed;
+		text-align: center;
+		top: 250px;
+		bottom: 150px;
+		left: 30px;
+		/*z-index: 1000;*/
+		display: block;
+		padding: 20px;
+		overflow-x: hidden;
+		overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+		background-color: #f5f5f5;
+		/*border-right: 1px solid #eee;*/
+	}
+
+	.tablink {
+	  background-color: #555;
+	  color: white;
+	  float: left;
+	  border: 1px solid white;
+	  outline: none;
+	  cursor: pointer;
+	  padding: 14px 16px;
+	  font-size: 17px;
+	  width: 50%;
+	}
+
+/* Change background color of buttons on hover */
+	.tablink:hover {
+	  background-color: #a5dfc5;
+	}
+
+	.tablink:active {
+	  outline: none;
+	}
+
+	.tablink.tab-selected {
+    	background-color: #42b983;
+    	color: #fff;
+    	outline: none;
+	}
+
+/* Set default styles for tab content */
+	/*.tabcontent {
+	  color: white;
+	  display: none;
+	  padding: 50px;
+	  text-align: center;
+	}*/
+
+    table, th, td {
+        border: 2px solid black;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 15px;
+        text-align: center;
+    }
+    th {
+        text-align: center;
+    }
+    table {
+        border-spacing: 5px;
+    }
+
+    .inp{
+        bgcolor:"red";
+    }
+</style>
+
+
+<script>
+	var mode = "comb";
+	var tIndex = 0;
+	var set_no = 2;
+	var dataSoFar = {type: "comb", sets: []};
+
+//    var data={
+//        "n":3,
+//        "inputs":[
+//            {
+//                "label":"inp1",
+//                "bitWidth":2,
+//                "values": ["10","10","10"]
+//            },
+//            {
+//                "label":"inp2",
+//                "bitWidth":2,
+//                "values": ["11","10","01"],
+//            },
+//            {
+//                "label":"inp3",
+//                "bitWidth":2,
+//                "values": ["01","10","01"],
+//            },
+//        ],
+//        "outputs":[
+//            {
+//                "label":"out1",
+//                "bitWidth":1,
+//                "values": ["1","1","0"]
+//            },
+//            {
+//                "label":"out2",
+//                "bitWidth":1,
+//                "values": ["1","0","1"],
+//            },
+//        ]
+//    }
+
+var data={n:0,inputs:[],outputs:[]}
+
+	function upperTitle(data) {
+		// var s = '<tr>'
+  //   	s += '<th>Placeholder</th>'
+  //   	s += `<th colspan=${data.inputs.length}> Inputs </th>`
+  //   	s += '</tr>'
+
+  //   	$('#upperTitle')[0].innerHTML = s;
+	}
+// <a href="#" onclick="addInpButton()"><span class="glyphicon glyphicon-plus-sign"></span></a>
+
+    function title(data=data){
+    	upperTitle(data);
+    	var s = '';
+        s+='<tr>';
+        s+='<th >Label</th>'
+        for(var i=0;i<data.inputs.length;i++)
+            s+='<th bgcolor="#aaF">' + data.inputs[i].label +'</th>'
+        for(var i=0;i<data.outputs.length;i++)
+            s+='<th bgcolor="#aFa">' + data.outputs[i].label +'</th>'
+        s+="</tr>";
+
+//        s+='<th>INPUT</th>'.repeat(data.inputs.length)
+//        s+='<th colspan="'+data.outputs.length+'">OUTPUTS</th>'
+        return s
+    }
+    function changeMode(m) {
+    	mode = m;
+    	$(`#combSelect`).removeClass('tab-selected');
+    	$(`#seqSelect`).removeClass('tab-selected');
+    	$("#tb-new-group").css("visibility", m === "seq" ? "visible" : "hidden");
+    	$(`#${m}Select`).addClass('tab-selected');
+  		$("#testBenchTable").empty();
+  		$("#testBenchTable").append(title(data));
+        $("#testBenchTable").append(labels(data));
+        dataSoFar = {type: mode, sets: []};
+    }
+    function labels(data=data){
+
+        var s='<tr>';
+        s+='<td >BitWidth</td>'
+        for(var i=0;i<data.inputs.length;i++)
+            s+='<td bgcolor="#aaF" type="inp">' + data.inputs[i].bitWidth +'</td>'
+        for(var i=0;i<data.outputs.length;i++)
+            s+='<td bgcolor="#aFa">' + data.outputs[i].bitWidth +'</td>'
+        s+="</tr>";
+        return s
+    }
+
+    function testCases(data=data){
+        var s='';
+        for(tIndex = 0;tIndex<data.n;tIndex++){
+
+            s+='<tr>';
+            s+='<td >'+(tIndex+1)+'</td>'
+            for(var j=0;j<data.inputs.length;j++)
+                s+='<td >' + data.inputs[j].values[tIndex] +'</td>'
+            for(var j=0;j<data.outputs.length;j++)
+                s+='<td >' + data.outputs[j].values[tIndex] +'</td>'
+            s+="</tr>";
+        }
+
+        return s;
+    }
+
+    // only visual
+    function loadData(data=data){
+        $("#testBenchTable").empty();
+        $("#testBenchTable").append(title(data));
+        $("#testBenchTable").append(labels(data));
+        $("#testBenchTable").append(testCases(data));
+        no_inps=data.inputs.length;
+        no_outs=data.outputs.length;
+    }
+
+    function generateTestData(){
+        var data = $('#testBenchTable').tableToJSON({allowHTML:true,ignoreColumns: [0]});
+        var type={};
+        i=0;
+        var attrs=[]
+        for (attr in data[0]){
+            attrs.push(attr);
+        }
+        for(var j=0;j<no_inps;j++){
+            type[attrs[i]]="inputs";
+            i++;
+        }
+        for(var j=0;j<no_outs;j++){
+            type[attrs[i]]="outputs";
+            i++;
+        }
+        var testData={n:data.length-1,inputs:[],outputs:[]}
+        var d={}
+        for(attr in data[0]){
+            d[attr]= {bitWidth:data[0][attr],label:attr,values:[]}
+        }
+        for(var i=1;i<data.length;i++){
+            for (attr in data[i]){
+                d[attr].values.push(data[i][attr])
+            }
+        }
+        for(var i=0;i<attrs.length;i++){
+            var attr=attrs[i];
+            testData[type[attr]].push(d[attr]);
+        }
+        console.log(data);
+        return testData;
+    }
+
+    function addInp(data){
+        data.inputs.push( { label:"inp"+(data.inputs.length+1),bitWidth:1,values:Array.from(Array(data.n), () => "0") })
+        return data;
+    }
+    function addOutput(data){
+        data.outputs.push( { label:"out"+(data.outputs.length+1),bitWidth:1,values:Array.from(Array(data.n), () => "0") })
+        return data;
+    }
+    // adds to data
+    function addCase(data){
+        for(var i=0;i<data.inputs.length;i++){
+            data.inputs[i].values.push("0");
+        }
+        for(var i=0;i<data.outputs.length;i++){
+            data.outputs[i].values.push("0");
+        }
+        data.n++;
+        return data;
+    }
+
+    // loadData(data);
+
+
+    function addInpButton(){
+        loadData(addInp(generateTestData()));
+    }
+    function addOutputButton(){
+        loadData(addOutput(generateTestData()));
+    }
+    function addCaseButton(){
+        loadData(addCase(generateTestData()));
+    }
+
+    function generateDataAndCopyButton(){
+
+    	newGroup();
+        $("#testDataDiv").show();
+        if(mode === "comb") dataSoFar.sets[0] = generateTestData();
+        $("#testData").val(JSON.stringify(dataSoFar));
+        setTimeout(function(){$("#testData").select();document.execCommand("copy")},100) ;
+    }
+
+    function loadDataButton() {
+        loadData(JSON.parse(prompt("Enter JSON TestBenchData")));
+    }
+
+    function newGroup() {
+    	if(mode === "comb") return;
+    	if(generateTestData().n > 0) dataSoFar.sets.push(generateTestData());
+    	console.log(dataSoFar);
+    	$("#testBenchTable tr").slice(2).remove();
+        $('#dsfTA').val(JSON.stringify(dataSoFar));
+    	// $("#testBenchTable").append(`<tr> <td style='text-align: center;' colspan="100%">SET ${set_no++}</td> </tr>`);
+    }
+
+    $("#testDataDiv").hide();
+</script>
+

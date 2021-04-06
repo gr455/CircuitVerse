@@ -148,6 +148,7 @@ export default class TB_Input extends CircuitElement {
      * function to resolve the testbench input adds
      */
     resolve() {
+        console.log("resolving testbench input");
         if(this.testData.type === "comb"){
             if (this.clockInp.value != this.prevClockState) {
                 this.prevClockState = this.clockInp.value;
