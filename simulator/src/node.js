@@ -10,6 +10,7 @@ import {
 import Wire from './wire';
 // import { colors } from './themer/themer';
 import { colors } from './themer/themer';
+import ContentionMeta from './contention'
 
 /**
 * Constructs all the connections of Node node
@@ -374,38 +375,82 @@ export default class Node {
             return;
         }
 
-        if (this.type == 0) {
+        if (this.type == NODE_INPUT) {
             if (this.parent.isResolvable()) { simulationArea.simulationQueue.add(this.parent); }
+        } else if (this.type == NODE_OUTPUT) {
+            simulationArea.contentionPending.removeAllContentionsForNode(this);
         }
 
         for (var i = 0; i < this.connections.length; i++) {
             const node = this.connections[i];
 
-            if (node.value != this.value || node.bitWidth != this.bitWidth) {
-                if (node.type == 1 && node.value != undefined 
-                    && node.parent.objectType != 'TriState' 
-                    && !(node.subcircuitOverride && node.scope != this.scope) // Subcircuit Input Node Output Override
-                    && node.parent.objectType != 'SubCircuit') { // Subcircuit Output Node Override
-                    this.highlighted = true;
-                    node.highlighted = true;
-                    var circuitName = node.scope.name;
-                    var circuitElementName = node.parent.objectType;
-                    showError(`Contention Error: ${this.value} and ${node.value} at ${circuitElementName} in ${circuitName}`);
-                } else if (node.bitWidth == this.bitWidth || node.type == 2) {
-                    if (node.parent.objectType == 'TriState' && node.value != undefined && node.type == 1) {
-                        if (node.parent.state.value) { simulationArea.contentionPending.push(node.parent); }
-                    }
+            switch (node.type) {
+            // TODO: For an output node, a downstream value (value given by elements other than the parent)
+            // should be overwritten in contention check and should not cause contention.
+            case NODE_OUTPUT:
+                if (node.value != this.value || node.bitWidth != this.bitWidth) {
+                    // Check contentions
+                    if (node.value != undefined && node.parent.objectType != 'SubCircuit'
+                        && !(node.subcircuitOverride && node.scope != this.scope)) {
 
-                    node.bitWidth = this.bitWidth;
-                    node.value = this.value;
-                    simulationArea.simulationQueue.add(node);
+                        simulationArea.contentionPending.add(node, this);
+                        break;
+                    }
                 } else {
+                    simulationArea.contentionPending.remove(node, this);
+                }
+
+            // Fallthrough. NODE_OUTPUT propagates like a contention checked NODE_INPUT
+            case NODE_INPUT:
+                // Check bitwidths
+                if (this.bitWidth != node.bitWidth) {
                     this.highlighted = true;
                     node.highlighted = true;
                     showError(`BitWidth Error: ${this.bitWidth} and ${node.bitWidth}`);
+                    break;
                 }
+
+            // Fallthrough. NODE_INPUT propagates like a bitwidth checked NODE_INTERMEDIATE
+            case NODE_INTERMEDIATE:
+
+                if (node.value != this.value || node.bitWidth != this.bitWidth) {
+                    /* We should not need this anymore. Tristate temp cont is taken care of by general deferred contentions */
+
+                    // // If tristate output node has a defined value
+                    // if (node.parent.objectType == 'TriState' && node.value != undefined && node.type == NODE_OUTPUT) {
+                    //     // then if control is set, then temporary contention.
+                    //     if (node.parent.state.value) { simulationArea.contentionPending.push(node.parent); }
+                    // }
+
+                    // Propagate
+                    node.bitWidth = this.bitWidth;
+                    node.value = this.value;
+                    simulationArea.simulationQueue.add(node);
+                }
+            default:
+                break;
             }
         }
+    }
+
+
+     /**
+     * Removes all contention entries for the current node if it's an output node.
+     * (Contention data keys are always only output nodes)
+     * 
+     * */
+    removeAllContentions() {
+        if (this.type !== NODE_OUTPUT) return;
+
+        simulationArea.contentionPending.removeAllContentions(this);
+    }
+
+    /**
+     * Removes contention between opNode and otherNode if it no longer exists.
+     * Called when any node propagates its values to a NODE_OUTPUT.
+     * */
+    checkContention(opNode, otherNode) {
+
     }
 
     /**

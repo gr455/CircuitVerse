@@ -26,11 +26,11 @@ if [ "$DETECTED_OS" = "linux" ]; then
   # Check if rootless docker is available
   if docker ps &>/dev/null; then
     # Run docker-compose up
-    docker compose up -d --build
+    docker-compose up -d --build
     # Run docker-compose exec web bash
-    docker compose exec web bin/docker/boot
+    docker-compose exec web bin/docker/boot
     # Run docker-compose down
-    docker compose down
+    docker-compose down
   else
     # Preserve environment variables for sudo
     # Run docker-compose up as root user
@@ -58,9 +58,9 @@ if [ "$DETECTED_OS" = "darwin" ]; then
   fi
 
   # Run docker-compose up
-  docker compose up -d --build
+  docker-compose up -d --build
   # Run docker-compose exec web bash
-  docker compose exec web bin/docker/boot
+  docker-compose exec web bin/docker/boot
   # Run docker-compose down
-  docker compose down
+  docker-compose down
 fi
