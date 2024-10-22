@@ -390,6 +390,9 @@ export function play(scope = globalScope, resetNodes = false) {
 
     // To store set of Nodes that have shown contention but kept temporarily
     simulationArea.contentionPending = new ContentionPendingData();
+
+    // For debug
+    globalScope.contentionPending = simulationArea.contentionPending;
     // add inputs to the simulation queue
     scope.addInputs();
     // to check if we have infinite loop in circuit
