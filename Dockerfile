@@ -1,4 +1,4 @@
-FROM ruby:3.2.1
+FROM ruby:3.4.6
 
 # Args
 ARG NON_ROOT_USER_ID
